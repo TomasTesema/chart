@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Covid - Dashboard </title>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+  <style>
+  
+    /* Footer */
+    .footer {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* Search Box */
+    .search-container {
+      width: 80%;
+      max-width: 600px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    .search-container input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .search-container button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #6e5eff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .search-container button:hover {
+      background-color: #615cff;
+    }
+
+    /* Charts */
+    .chart-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Table */
+    .table-container {
+      width: 80%;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    table {
+      width: 100%;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+    }
+    th {
+      background-color: #e8a64a;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .search-container input[type="text"] {
+        width: 100%;
+      }
+      .chart-container, .table-container {
+        width: 100%;
+      }
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h4>Select Year:</h4>
+    <select id="yearSelect">
+      <option value="2021">2021</option>
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+    </select>
+    <h4>Select Country:</h4>
+    <select id="countrySelect">
+      <option value="USA">USA</option>
+      <option value="UK">UK</option>
+      <option value="Canada">Canada</option>
+    </select>
+    <h4>State Report:</h4>
+    <p id="stateReport"></p>
+  
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Positive Cases: 41,835</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Hospitalized Cases: 776,361</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Negative Cases: 131,835</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Deaths: 515,151</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Current Status</h5>
+            <div class="chart-container" id="currentStatusChart"></div>
+            <ul>
+              <li>Negative Case: <span class="text-primary">131,835</span></li>
+              <li>Hospitalized: <span class="text-success">776,361</span></li>
+              <li>Positive Case: <span class="text-cyan">41,835</span></li>
+              <li>Death: <span class="text-danger">515,151</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Status Change</h5>
+            <div class="chart-container" id="statusChangeChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Hospital Statistics</h5>
+            <div class="chart-container" id="hospitalStatsChart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Pending for Test</h5>
+            <div class="chart-container" id="pendingForTestChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Test Result</h5>
+            <div class="chart-container" id="totalResultsChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer bg-dark text-light text-center py-3">
+    &copy; 2023 Your Company. All rights reserved.
+  </footer>
+
+  <script>
+    // Generate state report
+    function generateStateReport(year, country) {
+      // Dummy report data
+      const report = `Year: ${year}, Country: ${country}`;
+      document.getElementById("stateReport").innerText = report;
+    }
+
+    // Event listener for year and country selection change
+    document.getElementById("yearSelect").addEventListener("change", function() {
+      const selectedYear = this.value;
+      const selectedCountry = document.getElementById("countrySelect").value;
+      generateStateReport(selectedYear, selectedCountry);
+    });
+
+    document.getElementById("countrySelect").addEventListener("change", function() {
+      const selectedCountry = this.value;
+      const selectedYear = document.getElementById("yearSelect").value;
+      generateStateReport(selectedYear, selectedCountry);
+    });
+
+    // Retrieve COVID-19 data from the API
+    fetch('https://api.covidtracking.com/v1/states/current.json')
+      .then(response => response.json())
+      .then(data => {
+        // Extract required COVID-19 data
+        const states = data.map(state => state.state);
+        const currentStatusData = data.map(state => state.positive);
+        const statusChangeData = data.map(state => state.positiveIncrease);
+        const hospitalStatsData = data.map(state => state.hospitalizedCurrently);
+        const pendingForTestData = data.map(state => state.pending);
+        const totalResultsData = data.map(state => state.totalTestResults);
+
+        // Create the current status chart using Highcharts
+        Highcharts.chart('currentStatusChart', {
+          chart: {
+            type: 'pie'
+          },
+          title: {
+            text: 'Current COVID-19 Status'
+          },
+          series: [{
+            name: 'Cases',
+            data: [
+              ['Negative Cases', 131835],
+              ['Hospitalized Cases', 776361],
+              ['Positive Cases', 41835],
+              ['Deaths', 515151]
+            ]
+          }]
+        });
+
+        // Create the status change chart using Highcharts
+        Highcharts.chart('statusChangeChart', {
+          chart: {
+            type: 'column'
+          },
+          title: {
+            text: 'COVID-19 Positive Cases Change by State'
+          },
+          xAxis: {
+            categories: states
+          },
+          yAxis: {
+            title: {
+              text: 'Number of Cases'
+            }
+          },
+          series: [{
+            name: 'Positive Cases Change',
+            data: statusChangeData
+          }]
+        });
+
+        // Create the hospital statistics chart using Highcharts
+        Highcharts.chart('hospitalStatsChart', {
+          chart: {
+            type: 'column'
+          },
+          title: {
+            text: 'Hospitalized Cases by State'
+          },
+          xAxis: {
+            categories: states
+          },
+          yAxis: {
+            title: {
+              text: 'Number of Hospitalized Cases'
+            }
+          },
+          series: [{
+            name: 'Hospitalized Currently',
+            data: hospitalStatsData
+          }]
+        });
+
+        // Create the pending for test chart using Highcharts
+        Highcharts.chart('pendingForTestChart', {
+          chart: {
+            type: 'column'
+          },
+          title: {
+            text: 'COVID-19 Tests Pending by State'
+          },
+          xAxis: {
+            categories: states
+          },
+          yAxis: {
+            title: {
+              text: 'Number of Tests Pending'
+            }
+          },
+          series: [{
+            name: 'Tests Pending',
+            data: pendingForTestData
+          }]
+        });
+
+        // Create the total results chart using Highcharts
+        Highcharts.chart('totalResultsChart', {
+          chart: {
+            type: 'column'
+          },
+          title: {
+            text: 'Total COVID-19 Test Results by State'
+          },
+          xAxis: {
+            categories: states
+          },
+          yAxis: {
+            title: {
+              text: 'Total Test Results'
+            }
+          },
+          series: [{
+            name: 'Total Test Results',
+            data: totalResultsData
+          }]
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
+</body>
+</html>
